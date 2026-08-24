@@ -1,0 +1,4 @@
+type Query {
+  """Liveness probe. Returns "ok" when the server is up."""
+  health: String!
+}

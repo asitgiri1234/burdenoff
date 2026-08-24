@@ -16,6 +16,10 @@ import type { TicketDeps } from '../../src/services/ticket/index.ts';
 
 type TicketCreateArgs = { data: Record<string, unknown> };
 type TicketUpdateArgs = { where: { id: string }; data: Record<string, unknown> };
+type TicketUpdateManyArgs = {
+  where: { id: string; firstResponseAt?: null };
+  data: Record<string, unknown>;
+};
 type CommentCreateArgs = { data: Record<string, unknown> };
 
 /**
@@ -66,6 +70,19 @@ export class FakeTicketStore {
           const updated = { ...existing, ...data } as TicketRecord;
           this.tickets.set(updated.id, updated);
           return Promise.resolve(updated);
+        },
+
+        // Mirrors the conditional stamp the comment service relies on: the
+        // write only lands while firstResponseAt is still null.
+        updateMany: ({ where, data }: TicketUpdateManyArgs): Promise<{ count: number }> => {
+          const existing = this.tickets.get(where.id);
+          if (existing === undefined) return Promise.resolve({ count: 0 });
+          if (where.firstResponseAt === null && existing.firstResponseAt !== null) {
+            return Promise.resolve({ count: 0 });
+          }
+
+          this.tickets.set(existing.id, { ...existing, ...data } as TicketRecord);
+          return Promise.resolve({ count: 1 });
         },
       },
 

@@ -35,14 +35,20 @@ export async function addComment(
 
   // Comment insert and first-response stamp move together: a crash between them
   // would leave a ticket whose SLA says unanswered while a reply is visible.
+  //
+  // The stamp is an updateMany guarded on `firstResponseAt: null` rather than a
+  // plain update. The read above cannot hold a lock, so two agents replying at
+  // the same moment would both see null and both write; the guard makes the
+  // write conditional in SQL, so the loser matches zero rows and the earliest
+  // response stands.
   const [comment] = await deps.prisma.$transaction([
     deps.prisma.comment.create({
       data: { ticketId: ticket.id, authorId: viewer.id, content },
     }),
     ...(stampsFirstResponse
       ? [
-          deps.prisma.ticket.update({
-            where: { id: ticket.id },
+          deps.prisma.ticket.updateMany({
+            where: { id: ticket.id, firstResponseAt: null },
             data: { firstResponseAt: deps.now },
           }),
         ]

@@ -78,7 +78,7 @@ export function notFound(entity: 'ticket' | 'user', id: string): GraphQLError {
 export function invalidStatusTransition(from: string, to: string): GraphQLError {
   return apiError(
     ERROR_CODES.INVALID_STATUS_TRANSITION,
-    `Cannot move a ticket from ${from} to ${to}`,
+    `Ticket cannot transition from ${from} to ${to}.`,
     { from, to },
   );
 }

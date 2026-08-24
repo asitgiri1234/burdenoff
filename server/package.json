@@ -13,7 +13,9 @@
     "codegen": "graphql-codegen --config codegen.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "bun test"
+    "test": "bun run test:unit && bun run test:integration",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "NODE_ENV=test bun run tests/integration/helpers/setup.ts && NODE_ENV=test bun test tests/integration"
   },
   "prisma": {
     "seed": "bun prisma/seed.ts"

@@ -10,8 +10,11 @@ server/src/generated/
 
 # Environment
 .env
+.env.test
 .env.local
 .env.*.local
+!.env.example
+!.env.test.example
 
 # Logs
 *.log

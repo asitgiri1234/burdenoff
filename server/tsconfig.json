@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    // Language / module system
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "types": ["bun"],
+
+    // Bun runs TypeScript directly; tsc is only used for type checking.
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    // Strictness — `any` is banned by ESLint, these close the remaining holes.
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true
+  },
+  "include": ["src/**/*", "prisma/**/*", "tests/**/*", "codegen.ts"],
+  "exclude": ["node_modules", "dist"]
+}

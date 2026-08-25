@@ -362,7 +362,9 @@ Configuration is parsed and validated with Zod at boot and exported as a frozen
 object, so a missing or malformed variable fails immediately with a readable
 message instead of surfacing deep inside a request.
 
-`server/.env.test` (from `.env.test.example`) configures the integration suite.
+`server/.env.test` (from `.env.test.example`) is optional — it overrides the above
+for the integration suite. `server/.env` already carries `TEST_DATABASE_URL`, so the
+tests run without it; add it only if you want the test run pointed somewhere else.
 
 ---
 
@@ -372,7 +374,9 @@ Requires [Bun](https://bun.sh) and Docker.
 
 ```bash
 # 1. Start Postgres (app database on :5432, test database on :5433)
-docker compose up -d
+#    --wait blocks until both databases actually accept connections; without it
+#    `up -d` returns several seconds early and the next step can fail to connect
+docker compose up -d --wait
 
 # 2. Backend
 cd server

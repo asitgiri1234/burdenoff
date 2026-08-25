@@ -3,7 +3,7 @@
 Rough timings in brackets. Bullets are talking points, not a word-for-word
 script — say them in your own words.
 
-Before recording: `docker compose up -d`, `bun run gendb` in `server/`,
+Before recording: `docker compose up -d --wait`, `bun run gendb` in `server/`,
 `bun run dev` in both `server/` and `web/`. Have the app open at
 `localhost:5173` signed in as `agent@example.com`, plus an editor.
 

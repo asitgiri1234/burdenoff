@@ -12,7 +12,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d support_tickets"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d support_tickets"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -33,7 +33,7 @@ services:
     tmpfs:
       - /var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d support_tickets_test"]
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d support_tickets_test"]
       interval: 5s
       timeout: 5s
       retries: 10

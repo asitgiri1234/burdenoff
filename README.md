@@ -451,11 +451,27 @@ production. Assertions are made against the **database**, not just the API
 response. The suite applies migrations with `prisma migrate deploy` first, so the
 committed migration files are verified too, not just the schema.
 
+**Frontend tests** use Vitest and React Testing Library:
+
+```bash
+cd web
+bun run test         # 70 tests, jsdom, no server required
+bun run test:watch
+```
+
+They cover the formatting and error-mapping helpers, the API client (bearer
+token handling, typed `ApiError` conversion, session clearing on
+`UNAUTHORIZED`), and the components: the SLA badge, the error and field-error
+renderers, the sign-in/register form, and the ticket detail page's role-gated
+controls. A dedicated group asserts that `SlaBadge` renders whatever state the
+API returned even when the remaining minutes would suggest otherwise — the
+regression guard for the rule that the backend owns SLA state.
+
 Quality gates, run in CI on every push and PR:
 
 ```bash
-cd server && bun run lint && bun run typecheck
-cd web    && bun run lint && bun run typecheck
+cd server && bun run lint && bun run typecheck && bun run test
+cd web    && bun run lint && bun run typecheck && bun run test
 ```
 
 ---
@@ -713,9 +729,10 @@ Stated honestly:
   even on a final page. Following it yields an empty page rather than `null`.
 - **No file attachments**, no rich text, and no full-text search over ticket
   bodies.
-- **The frontend has no automated test suite.** It was verified by a scripted
-  browser click-through rather than committed component tests; server-side
-  behaviour carries the 183 automated tests.
+- **No committed end-to-end tests.** The frontend has 70 committed component
+  and unit tests, but the full-stack click-through (real browser against a
+  running API) was scripted ad hoc rather than committed, so it does not run in
+  CI.
 - **`bun.lock` is generated in a Linux container.** Bun on the Windows host used
   for development cannot write a lockfile (`EINVAL` on the atomic replace), so
   it is produced via `docker run oven/bun`. CI uses it normally.

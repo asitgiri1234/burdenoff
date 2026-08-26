@@ -34,54 +34,63 @@ export function CreateTicketPage(): React.JSX.Element {
     <div className="page page--narrow">
       <h1>New ticket</h1>
 
+      {/* Labels wrap only the caption and control; hints and errors sit outside
+          so they do not become part of the field's accessible name. */}
       <form className="card" onSubmit={(event) => void onSubmit(event)}>
         <ErrorBanner error={error} />
 
-        <label className="field">
-          <span>Title</span>
-          <input
-            value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-            }}
-            required
-          />
+        <div className="field">
+          <label>
+            <span>Title</span>
+            <input
+              value={title}
+              onChange={(event) => {
+                setTitle(event.target.value);
+              }}
+              required
+            />
+          </label>
           <FieldError error={error} path="title" />
-        </label>
+        </div>
 
-        <label className="field">
-          <span>Description</span>
-          <textarea
-            value={description}
-            rows={6}
-            onChange={(event) => {
-              setDescription(event.target.value);
-            }}
-            required
-          />
+        <div className="field">
+          <label>
+            <span>Description</span>
+            <textarea
+              value={description}
+              rows={6}
+              onChange={(event) => {
+                setDescription(event.target.value);
+              }}
+              required
+            />
+          </label>
           <FieldError error={error} path="description" />
-        </label>
+        </div>
 
-        <label className="field">
-          <span>Priority</span>
-          <select
-            value={priority}
-            onChange={(event) => {
-              setPriority(event.target.value as Priority);
-            }}
-          >
-            {PRIORITIES.map((value) => (
-              <option key={value} value={value}>
-                {humanise(value)}
-              </option>
-            ))}
-          </select>
+        <div className="field">
+          <label>
+            <span>Priority</span>
+            <select
+              value={priority}
+              onChange={(event) => {
+                setPriority(event.target.value as Priority);
+              }}
+              aria-describedby="priority-hint"
+            >
+              {PRIORITIES.map((value) => (
+                <option key={value} value={value}>
+                  {humanise(value)}
+                </option>
+              ))}
+            </select>
+          </label>
           <FieldError error={error} path="priority" />
-          <p className="field__hint">
+          <p id="priority-hint" className="field__hint">
             Priority sets the SLA budget. The server computes the deadlines from
             business hours when the ticket is created.
           </p>
-        </label>
+        </div>
 
         <button type="submit" className="button button--primary" disabled={busy}>
           {busy ? 'Creating…' : 'Create ticket'}

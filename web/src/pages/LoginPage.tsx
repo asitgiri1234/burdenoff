@@ -44,9 +44,13 @@ export function LoginPage(): React.JSX.Element {
     <div className="auth">
       <h1 className="auth__title">Support Ticket &amp; SLA Tracker</h1>
 
-      <div className="auth__tabs">
+      {/* Exposed as a tablist so the mode switchers are distinguishable from
+          the form's submit button, which deliberately shares their wording. */}
+      <div className="auth__tabs" role="tablist" aria-label="Authentication mode">
         <button
           type="button"
+          role="tab"
+          aria-selected={mode === 'login'}
           className={mode === 'login' ? 'tab tab--active' : 'tab'}
           onClick={() => {
             setMode('login');
@@ -57,6 +61,8 @@ export function LoginPage(): React.JSX.Element {
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={mode === 'register'}
           className={mode === 'register' ? 'tab tab--active' : 'tab'}
           onClick={() => {
             setMode('register');
@@ -67,83 +73,102 @@ export function LoginPage(): React.JSX.Element {
         </button>
       </div>
 
+      {/*
+        Each <label> wraps only its caption and control. Hints and validation
+        messages sit outside it, linked with aria-describedby, so they are
+        announced as a description instead of being swallowed into the field's
+        accessible name.
+      */}
       <form className="auth__form" onSubmit={(event) => void onSubmit(event)}>
         <ErrorBanner error={error} />
 
         {mode === 'register' && (
-          <label className="field">
-            <span>Name</span>
-            <input
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-              }}
-              autoComplete="name"
-              required
-            />
+          <div className="field">
+            <label>
+              <span>Name</span>
+              <input
+                value={name}
+                onChange={(event) => {
+                  setName(event.target.value);
+                }}
+                autoComplete="name"
+                required
+              />
+            </label>
             <FieldError error={error} path="name" />
-          </label>
+          </div>
         )}
 
-        <label className="field">
-          <span>Email</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => {
-              setEmail(event.target.value);
-            }}
-            autoComplete="email"
-            required
-          />
+        <div className="field">
+          <label>
+            <span>Email</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => {
+                setEmail(event.target.value);
+              }}
+              autoComplete="email"
+              required
+            />
+          </label>
           <FieldError error={error} path="email" />
-        </label>
+        </div>
 
-        <label className="field">
-          <span>Password</span>
-          <input
-            type="password"
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-            }}
-            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-            required
-          />
+        <div className="field">
+          <label>
+            <span>Password</span>
+            <input
+              type="password"
+              value={password}
+              onChange={(event) => {
+                setPassword(event.target.value);
+              }}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              required
+            />
+          </label>
           <FieldError error={error} path="password" />
-        </label>
+        </div>
 
         {mode === 'register' && (
           <>
-            <label className="field">
-              <span>Role</span>
-              <select
-                value={role}
-                onChange={(event) => {
-                  setRole(event.target.value as UserRole);
-                }}
-              >
-                <option value="REPORTER">Reporter</option>
-                <option value="AGENT">Agent</option>
-              </select>
+            <div className="field">
+              <label>
+                <span>Role</span>
+                <select
+                  value={role}
+                  onChange={(event) => {
+                    setRole(event.target.value as UserRole);
+                  }}
+                >
+                  <option value="REPORTER">Reporter</option>
+                  <option value="AGENT">Agent</option>
+                </select>
+              </label>
               <FieldError error={error} path="role" />
-            </label>
+            </div>
 
             {/* Agent accounts can read and change every ticket, so creating one
                 requires the invite code held by whoever runs the deployment. */}
             {role === 'AGENT' && (
-              <label className="field">
-                <span>Agent signup code</span>
-                <input
-                  value={agentSignupCode}
-                  onChange={(event) => {
-                    setAgentSignupCode(event.target.value);
-                  }}
-                  required
-                />
+              <div className="field">
+                <label>
+                  <span>Agent signup code</span>
+                  <input
+                    value={agentSignupCode}
+                    onChange={(event) => {
+                      setAgentSignupCode(event.target.value);
+                    }}
+                    aria-describedby="agent-signup-code-hint"
+                    required
+                  />
+                </label>
                 <FieldError error={error} path="agentSignupCode" />
-                <p className="field__hint">Required to register as an agent.</p>
-              </label>
+                <p id="agent-signup-code-hint" className="field__hint">
+                  Required to register as an agent.
+                </p>
+              </div>
             )}
           </>
         )}

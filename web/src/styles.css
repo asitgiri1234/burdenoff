@@ -131,7 +131,7 @@ code {
   margin-bottom: 0.9rem;
 }
 
-.field > span {
+.field span {
   display: block;
   font-weight: 600;
   font-size: 0.85rem;

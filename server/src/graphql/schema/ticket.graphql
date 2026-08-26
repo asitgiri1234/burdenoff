@@ -1,0 +1,134 @@
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+"""
+State of a single SLA clock. MET is terminal — once the event happened the
+clock stopped, so a late response still reports MET rather than BREACHED.
+"""
+enum SLAState {
+  ON_TRACK
+  AT_RISK
+  BREACHED
+  MET
+}
+
+type SLAInfo {
+  """ISO 8601 timestamp."""
+  firstResponseDueAt: String!
+  """ISO 8601 timestamp."""
+  resolutionDueAt: String!
+  firstResponseState: SLAState!
+  resolutionState: SLAState!
+  """Business minutes left before the deadline; 0 once past due."""
+  firstResponseRemainingMinutes: Int!
+  resolutionRemainingMinutes: Int!
+}
+
+type Ticket {
+  id: ID!
+  title: String!
+  description: String!
+  priority: Priority!
+  status: TicketStatus!
+  reporter: User!
+  assignee: User
+  createdAt: String!
+  firstResponseAt: String
+  resolvedAt: String
+  closedAt: String
+  comments: [Comment!]!
+  sla: SLAInfo!
+}
+
+type Comment {
+  id: ID!
+  ticket: Ticket!
+  author: User!
+  content: String!
+  createdAt: String!
+}
+
+type PageInfo {
+  hasNextPage: Boolean!
+  endCursor: String
+}
+
+type TicketConnection {
+  nodes: [Ticket!]!
+  pageInfo: PageInfo!
+}
+
+type TicketDashboard {
+  openTickets: Int!
+  inProgressTickets: Int!
+  resolvedTickets: Int!
+  atRiskTickets: Int!
+  breachedTickets: Int!
+}
+
+type Holiday {
+  id: ID!
+  """Calendar date as yyyy-MM-dd."""
+  date: String!
+  name: String!
+}
+
+enum TicketSortField {
+  CREATED_AT
+  PRIORITY
+  FIRST_RESPONSE_DUE_AT
+}
+
+enum SortDirection {
+  ASC
+  DESC
+}
+
+extend type Query {
+  """
+  Tickets visible to the caller. Agents see everything; reporters see only
+  tickets they reported. Paginated by an opaque cursor; `take` defaults to 20
+  and is clamped to 100.
+  """
+  tickets(
+    status: TicketStatus
+    priority: Priority
+    assigneeId: ID
+    slaState: SLAState
+    take: Int
+    cursor: String
+    sortBy: TicketSortField
+    sortDirection: SortDirection
+  ): TicketConnection!
+
+  ticket(id: ID!): Ticket
+
+  """Counts across the caller's visible tickets."""
+  dashboard: TicketDashboard!
+
+  holidays: [Holiday!]!
+}
+
+extend type Mutation {
+  createTicket(title: String!, description: String!, priority: Priority!): Ticket!
+
+  """Assigns a ticket to an agent. An OPEN ticket also moves to IN_PROGRESS."""
+  assignTicket(ticketId: ID!, assigneeId: ID!): Ticket!
+
+  changeTicketStatus(ticketId: ID!, status: TicketStatus!): Ticket!
+
+  resolveTicket(ticketId: ID!): Ticket!
+
+  addComment(ticketId: ID!, content: String!): Comment!
+}

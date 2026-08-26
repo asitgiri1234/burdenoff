@@ -1,0 +1,44 @@
+enum UserRole {
+  REPORTER
+  AGENT
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+  """ISO 8601 timestamp."""
+  createdAt: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+extend type Query {
+  """The signed-in user, or null when the request is anonymous."""
+  me: User
+
+  """
+  Users visible to the caller. Agents see everyone; reporters only ever see
+  agents, which is what they need to make sense of ticket assignees.
+  """
+  users(role: UserRole): [User!]!
+}
+
+extend type Mutation {
+  """
+  Creates an account. Registering as an AGENT requires a valid agentSignupCode.
+  """
+  register(
+    name: String!
+    email: String!
+    password: String!
+    role: UserRole!
+    agentSignupCode: String
+  ): AuthPayload!
+
+  login(email: String!, password: String!): AuthPayload!
+}

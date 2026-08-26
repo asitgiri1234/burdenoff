@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  REPORTER
+  AGENT
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole
+  createdAt    DateTime @default(now())
+
+  reportedTickets Ticket[]  @relation("reporter")
+  assignedTickets Ticket[]  @relation("assignee")
+  comments        Comment[]
+}
+
+model Ticket {
+  id          String       @id @default(cuid())
+  title       String
+  description String
+  priority    Priority
+  status      TicketStatus @default(OPEN)
+
+  reporterId String
+  reporter   User   @relation("reporter", fields: [reporterId], references: [id])
+
+  assigneeId String?
+  assignee   User?   @relation("assignee", fields: [assigneeId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Actual SLA events, set as they happen.
+  firstResponseAt DateTime?
+  resolvedAt      DateTime?
+  closedAt        DateTime?
+
+  // Precomputed SLA targets, written once at ticket creation by the SLA engine.
+  //
+  // These are stored rather than derived in JS on purpose: SLA state (OK /
+  // AT_RISK / BREACHED) must be filterable, sortable and countable directly in
+  // SQL. Computing business-hours deadlines in application code would force us
+  // to load every ticket into memory to answer "how many are breached?", which
+  // does not scale and cannot be indexed. With the deadlines materialised, SLA
+  // state is a plain comparison against now() that Postgres can index.
+  firstResponseDueAt    DateTime
+  resolutionDueAt       DateTime
+  firstResponseAtRiskAt DateTime
+  resolutionAtRiskAt    DateTime
+
+  comments Comment[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([assigneeId])
+  @@index([createdAt])
+  @@index([firstResponseAt, firstResponseDueAt])
+  @@index([resolvedAt, resolutionDueAt])
+}
+
+model Comment {
+  id       String @id @default(cuid())
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id])
+
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([ticketId, createdAt])
+}
+
+model Holiday {
+  id        String   @id @default(cuid())
+  date      DateTime @unique @db.Date
+  name      String
+  createdAt DateTime @default(now())
+}
